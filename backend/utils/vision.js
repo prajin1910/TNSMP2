@@ -3,9 +3,16 @@ const path = require('path');
 const OpenAI = require('openai');
 
 // Initialize Vision client with service account
-const client = new vision.ImageAnnotatorClient({
-  keyFilename: path.join(__dirname, '..', 'config', 'vision-key.json')
-});
+// Supports GOOGLE_CREDENTIALS env var (JSON string) for cloud deployment,
+// or falls back to local key file for development
+let visionConfig = {};
+if (process.env.GOOGLE_CREDENTIALS) {
+  const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+  visionConfig = { credentials };
+} else {
+  visionConfig = { keyFilename: path.join(__dirname, '..', 'config', 'vision-key.json') };
+}
+const client = new vision.ImageAnnotatorClient(visionConfig);
 
 // Initialize OpenRouter client for vision fallback
 const openrouter = new OpenAI({
